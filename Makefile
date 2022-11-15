@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -c -O2
-LDFLAGS = -lcrypto
+CFLAGS = -c -O2 -I/usr/local/ssl/include
+LDFLAGS = -L/usr/local/ssl/lib -lssl -lcrypto
 PROG = main
 SRCS = main.c CSM_library.c
 OBJS = $(SRCS:.c=.o)

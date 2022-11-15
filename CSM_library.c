@@ -537,7 +537,8 @@ Std_ReturnType Cry_MacGenerateStart(const void *cfgId, const Csm_SymKeyType *key
 	uint32 ret;
 	Cry_MacGenerateConfigType *cfg = (Cry_MacGenerateConfigType *)cfgId;
 	cfg->cfgId = MACGEN_ID;
-	ret = HMAC_Init(&cfg->ctx, keyPtr->data, keyPtr->length, EVP_sha1());
+	cfg->ctx = HMAC_CTX_new();
+	ret = HMAC_Init(cfg->ctx, keyPtr->data, keyPtr->length, EVP_sha1());
 	if(ret != 1){
 		ERR_print_errors_fp(stderr);
 		return E_NOT_OK;
@@ -570,7 +571,7 @@ Std_ReturnType Cry_MacGenerateUpdate(Csm_ConfigIdType cfgId, const uint8 *dataPt
 	Cry_MacGenerateConfigType *cfgPtr;
 	cfgPtr = csm_generate->PrimitiveConfigPtr;	
 	uint32 ret;
-	ret = HMAC_Update(&cfgPtr->ctx, dataPtr, dataLength);
+	ret = HMAC_Update(cfgPtr->ctx, dataPtr, dataLength);
 	if(ret != 1){
 		ERR_print_errors_fp(stderr);
 		return E_NOT_OK;
@@ -598,7 +599,7 @@ Std_ReturnType Cry_MacGenerateFinish(Csm_ConfigIdType cfgId, uint8 *resultPtr, u
 	uint32 ret;
 	uint32 res_len;
 	res_len = *resultLengthPtr;
-	ret = HMAC_Final(&cfgPtr->ctx, result_mac, &cfgPtr->len);
+	ret = HMAC_Final(cfgPtr->ctx, result_mac, &cfgPtr->len);
 	if(ret != 1){
 		ERR_print_errors_fp(stderr);
 		return E_NOT_OK;
@@ -612,14 +613,14 @@ Std_ReturnType Cry_MacGenerateFinish(Csm_ConfigIdType cfgId, uint8 *resultPtr, u
 			cfgPtr->len = res_len;
 		else{
 			/* Clean up */
-			HMAC_cleanup(&cfgPtr->ctx);	
+			HMAC_CTX_reset(cfgPtr->ctx);	
 			return CSM_E_SMALL_BUFFER;
 		}
 	}
 	*resultLengthPtr = cfgPtr->len;
 	memcpy(resultPtr, result_mac, cfgPtr->len);
 	/* Clean up */
-	HMAC_cleanup(&cfgPtr->ctx);	
+	HMAC_CTX_reset(cfgPtr->ctx);	
 	return E_OK;
 }
 
@@ -639,7 +640,8 @@ Std_ReturnType Cry_MacVerifyStart(const void *cfgId, const Csm_SymKeyType *keyPt
 	uint32 ret;
 	Cry_MacVerifyConfigType *cfg = (Cry_MacVerifyConfigType *)cfgId;
 	cfg->cfgId = MACVER_ID;
-	ret = HMAC_Init(&cfg->ctx, keyPtr->data, keyPtr->length, EVP_sha1());
+	cfg->ctx = HMAC_CTX_new();
+	ret = HMAC_Init(cfg->ctx, keyPtr->data, keyPtr->length, EVP_sha1());
 	if(ret != 1){
 		ERR_print_errors_fp(stderr);
 		return E_NOT_OK;
@@ -672,7 +674,7 @@ Std_ReturnType Cry_MacVerifyUpdate(Csm_ConfigIdType cfgId, const uint8 *dataPtr,
 	Cry_MacVerifyConfigType *cfgPtr;
 	cfgPtr = csm_verify->PrimitiveConfigPtr;	
 	uint32 ret;
-	ret = HMAC_Update(&cfgPtr->ctx, dataPtr, dataLength);
+	ret = HMAC_Update(cfgPtr->ctx, dataPtr, dataLength);
 	if(ret != 1){
 		ERR_print_errors_fp(stderr);
 		return E_NOT_OK;
@@ -698,7 +700,7 @@ Std_ReturnType Cry_MacVerifyFinish(Csm_ConfigIdType cfgId, uint8 *MacPtr, uint32
 	cfgPtr = csm_verify->PrimitiveConfigPtr;	
 	uint32 res;	
 	uint32 ret;
-	ret = HMAC_Final(&cfgPtr->ctx, cfgPtr->new_Mac, &cfgPtr->len);
+	ret = HMAC_Final(cfgPtr->ctx, cfgPtr->new_Mac, &cfgPtr->len);
 	if(ret != 1){
 		ERR_print_errors_fp(stderr);
 		return E_NOT_OK;
@@ -710,7 +712,7 @@ Std_ReturnType Cry_MacVerifyFinish(Csm_ConfigIdType cfgId, uint8 *MacPtr, uint32
 	else
 		*resultPtr = CSM_E_VER_NOT_OK;
 	/* Remove key from memory */
-	HMAC_cleanup(&cfgPtr->ctx);	
+	HMAC_CTX_reset(cfgPtr->ctx);	
 	return E_OK;
 }
 

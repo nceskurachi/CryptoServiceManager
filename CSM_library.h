@@ -175,14 +175,14 @@ typedef struct Csm_SymBlockDecryptConfigType{
 /* Structure for mac generation primitive's configuration */
 typedef struct Cry_MacGenerateConfigType{
 	Csm_ConfigIdType cfgId;
-	HMAC_CTX ctx;
+	HMAC_CTX *ctx;
 	uint32 len;
 } Cry_MacGenerateConfigType;
 
 /* Structure for mac verification primitive's configuration */
 typedef struct Cry_MacVerifyConfigType{
 	Csm_ConfigIdType cfgId;	
-	HMAC_CTX ctx;
+	HMAC_CTX *ctx;
 	uint32 len;
 	uint8 new_Mac[160];
 } Cry_MacVerifyConfigType;
